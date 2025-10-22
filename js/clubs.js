@@ -41,7 +41,6 @@
       </form>
       ` : `<p class="note">⚠️ Staff cannot create clubs. You can only upload files.</p>`}
 
-      <!-- Filters -->
       <div class="account-filters">
         <input type="text" id="search-club" placeholder="🔍 Search club..." oninput="filterClubs()" />
         <select id="filter-status" onchange="filterClubs()">
@@ -51,10 +50,8 @@
         </select>
       </div>
 
-      <!-- Clubs List -->
       <div id="clubs-list" style="margin-top: 20px;">Loading clubs...</div>
 
-      <!-- Edit Club Modal -->
       <div id="edit-club-modal" class="modal-overlay">
         <div class="modal-content">
           <h3>Edit Club</h3>
@@ -76,7 +73,6 @@
         </div>
       </div>
 
-      <!-- NEW: Add Member Modal -->
       <div id="add-member-modal" class="modal-overlay">
         <div class="modal-content">
           <h3>Add Member to <span id="add-member-club-name"></span></h3>
@@ -106,9 +102,6 @@
           </form>
         </div>
       </div>
-      <!-- END NEW: Add Member Modal -->
-
-      <!-- Edit Member Modal -->
       <div id="edit-member-modal" class="modal-overlay">
         <div class="modal-content">
           <h3>Edit Member</h3>
@@ -137,7 +130,6 @@
         </div>
       </div>
 
-      <!-- Files Modal (omitted for brevity) -->
       <div id="files-modal" class="modal-overlay">
         <div class="modal-content">
           <h3 id="files-modal-title">Club Files</h3>
@@ -153,11 +145,14 @@
         </div>
       </div>
 
-      <!-- File Preview Modal (omitted for brevity) -->
       <div id="preview-modal" class="modal-overlay">
         <div class="modal-content">
           <span class="close" onclick="closePreview()">&times;</span>
           <div id="file-preview" style="height:80vh; overflow:auto;"></div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="closePreview()">Close</button>
+          </div>
         </div>
       </div>
     `;
@@ -312,23 +307,28 @@
             <span class="club-tag">${members} Members</span>
           </div>
 
-          ${containsChildContainer ? `<div class="subclubs" id="subclubs-${c.id}" data-mode="${childHtml ? 'preloaded' : 'remote'}" data-loaded="${childHtml ? 'true' : 'false'}" style="margin-top:10px; margin-left:8px; display:none;">
-            ${childHtml || ''}
-          </div>` : ''}
-        </div>
+          ${containsChildContainer ? `
+          <div class="subclubs" id="subclubs-${c.id}" data-mode="${childHtml ? 'preloaded' : 'remote'}" data-loaded="${childHtml ? 'true' : 'false'}" style="margin-top:10px; display:none;">
+            <div class="subclub-list-container">
+                ${childHtml || ''}
+            </div>
+          </div>
+          ` : ''}
+          </div>
 
         <div class="account-actions" style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
-          ${user.role === "admin" ? `
-            <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px;">
+            ${user.role === "admin" ? `
               <button class="btn-edit" onclick="openClubEditModal(${c.id}, '${nameEsc}', '${descEsc}')">Edit</button>
               <button class="btn-delete" onclick="deleteClub(${c.id})">Delete</button>
               <button class="btn-status ${status === 'active' ? 'btn-disable' : 'btn-enable'}" onclick="toggleClubStatus(${c.id}, '${status}')">
                 ${status === 'active' ? 'Disable' : 'Enable'}
               </button>
-            </div>` : ''}
+            ` : ''}
+          </div>
+          
           <div style="display:flex; gap:8px;">
             <button class="btn-files" onclick="openFilesModal(${c.id}, '${nameEsc}')">Files</button>
-            <button class="btn-add-member" onclick="openAddMemberModal(${c.id}, '${nameEsc}')">Add Member</button> <!-- NEW BUTTON -->
             <button class="btn-subclubs" onclick="toggleSubClubs(${c.id})">Sub-Clubs</button>
           </div>
         </div>
@@ -360,11 +360,17 @@ function renderClubRowHtml(sc, isChild) {
 
       ${user.role === "admin" ? `
         <div class="subclub-actions">
-          <button class="btn-add-member" onclick="openAddMemberModal(${sc.id}, '${nameEsc}')">Add Member</button> <!-- NEW BUTTON -->
+          
+          <button class="btn-minimal edit" onclick="loadClubsMembers(${sc.id}, '${nameEsc}')">Members</button>
+
           <button class="btn-minimal edit" onclick="openClubEditModal(${sc.id}, '${nameEsc}', '${descEsc}')">Edit</button>
           <button class="btn-minimal delete" onclick="deleteClub(${sc.id})">Delete</button>
         </div>
       ` : ''}
+    </div>
+
+    <div class="member-list-area" id="members-list-for-${sc.id}" style="display:none; padding: 10px 0 10px 20px;">
+        <p style="color:#aaa;">Loading members...</p>
     </div>
   `;
 }
@@ -416,6 +422,48 @@ function renderClubRowHtml(sc, isChild) {
         alert("Error communicating with server.");
     });
   }
+  
+  /* ==========================
+     Load Members List for Club/Sub-Club (NEW FUNCTION)
+  ========================== */
+  function loadClubsMembers(clubId, clubName) {
+    const listArea = document.getElementById(`members-list-for-${clubId}`);
+    if (!listArea) return;
+
+    // Toggle display (hide if already visible)
+    if (listArea.style.display === "block") {
+        listArea.style.display = "none";
+        return;
+    }
+
+    listArea.style.display = "block";
+    listArea.innerHTML = `<p style='color:#aaa;'>Loading members for ${clubName}...</p>`;
+
+    fetch(`php/get_club_members.php?club_id=${clubId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && Array.isArray(data.members) && data.members.length > 0) {
+                listArea.innerHTML = data.members.map(m => {
+                    // Removed Edit and Delete buttons from the member row
+                    return `
+                        <div class="member-item member-row">
+                            <span class="member-name">${m.name}</span>
+                            <span class="role-badge">${m.roles || 'Member'}</span>
+                            <div class="member-row-actions">
+                                </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                listArea.innerHTML = `<p style="color:#aaa; padding:10px;">No members found in ${clubName}.</p>`;
+            }
+        })
+        .catch(err => {
+            console.error('Error loading members:', err);
+            listArea.innerHTML = `<p style="color:#e74c3c; padding:10px;">Failed to load members.</p>`;
+        });
+}
+
   /* ==========================
      Toggle & Load Sub-Clubs (omitted for brevity)
   ========================== */
@@ -440,22 +488,30 @@ function renderClubRowHtml(sc, isChild) {
 
     // otherwise fetch remote sub-clubs (fallback) and populate
     container.style.display = "block";
-    container.innerHTML = "<div style='padding:8px;'>Loading sub-clubs...</div>";
-
+    
+    // START MODIFICATION: Target the inner list container for loading/data
+    const innerList = container.querySelector('.subclub-list-container');
+    if (!innerList) {
+        container.innerHTML = "<div style='padding:8px; color:#e74c3c;'>Error: Sub-club container missing.</div>";
+        return;
+    }
+    innerList.innerHTML = "<div style='padding:8px; color:#aaa; text-align:center;'>Loading sub-clubs...</div>";
+    
     fetch(`php/get_clubs.php?parent_id=${parentId}`)
   .then(res => res.json())
   .then(data => {
     if (data && data.success && Array.isArray(data.clubs) && data.clubs.length > 0) {
-      container.innerHTML = data.clubs.map(sc => renderClubRowHtml(sc, true)).join('');
+      innerList.innerHTML = data.clubs.map(sc => renderClubRowHtml(sc, true)).join('');
     } else {
-      container.innerHTML = "<div style='padding:8px; color:#888;'>No sub-clubs found.</div>";
+      innerList.innerHTML = "<div style='padding:8px; color:#888; text-align:center;'>No sub-clubs found.</div>";
     }
     container.setAttribute('data-loaded', 'true');
     container.setAttribute('data-mode', 'remote');
   })
 ;
   }
-
+  // END MODIFICATION
+  
   /* ==========================
      Edit Club Modal (omitted for brevity)
   ========================== */
@@ -533,7 +589,7 @@ function renderClubRowHtml(sc, isChild) {
   }
 
   /* ==========================
-     Club Files functions (omitted for brevity)
+     Club Files functions
   ========================== */
  function openFilesModal(clubId, clubName) {
   const modal = document.getElementById("files-modal");
@@ -645,7 +701,7 @@ function renderClubRowHtml(sc, isChild) {
   }
 
   /* ==========================
-     File Preview (omitted for brevity)
+     File Preview
   ========================== */
   function previewFile(downloadUrl, fileName) {
     const modal = document.getElementById("preview-modal");
@@ -656,13 +712,19 @@ function renderClubRowHtml(sc, isChild) {
     if (lower.match(/\.(jpg|jpeg|png|gif)$/)) {
       content = `<img src="${downloadUrl}" style="max-width:100%; max-height:100%; display:block; margin:auto;">`;
     } else if (lower.endsWith(".pdf")) {
+      // Use iframe for PDF preview
       content = `<iframe src="${downloadUrl}" style="width:100%; height:100%;" frameborder="0"></iframe>`;
     } else {
       content = `<p>Preview not available. <a href="${downloadUrl}" target="_blank" rel="noopener">Download</a></p>`;
     }
+    
+    // Set preview content
     preview.innerHTML = content;
+    
+    // Show modal
     modal.style.display = "flex";
   }
+  
   function closePreview() {
     const modal = document.getElementById("preview-modal");
     if (modal) modal.style.display = "none";
@@ -671,7 +733,7 @@ function renderClubRowHtml(sc, isChild) {
   }
 
   /* ==========================
-     Helpers: icons, delete, toggle status, filter (omitted for brevity)
+     Helpers: icons, delete, toggle status, filter
   ========================== */
   function getClubIcon(name) {
     const club = String(name || '').toLowerCase();

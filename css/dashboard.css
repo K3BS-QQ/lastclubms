@@ -598,6 +598,114 @@ header h1 {
   background: #2563eb;
 }
 
+/* ==============================
+   ACTION BUTTONS (Unified Style)
+============================== */
+
+/* Base styles for all action buttons */
+.btn-edit,
+.btn-delete,
+.btn-status,
+.edit-btn,
+.delete-btn,
+.enable-btn,
+.disable-btn,
+.action-btn, /* <--- This class is critical for the new buttons */
+.btn-files, /* <--- Added the new classes here for base style */
+.btn-subclubs { /* <--- Added the new classes here for base style */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 20px; /* pill shape */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+/* ... (Existing styles for EDIT, DELETE, ENABLE, DISABLE) ... */
+
+/* FILES (New - Blue/Cyan) */
+.btn-files { background: #3498db; }
+.btn-files:hover {
+  background: #2980b9;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 22px rgba(52,152,219,0.3), 0 0 12px rgba(52,152,219,0.6);
+}
+
+/* SUB-CLUBS (New - Teal/Cyan) */
+.btn-subclubs { background: #1abc9c; }
+.btn-subclubs:hover {
+  background: #16a085;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 22px rgba(26,188,156,0.3), 0 0 12px rgba(26,188,156,0.6);
+}
+
+/* ==============================
+   SUB-CLUB CARD STYLING (For the Sub-Clubs Section)
+============================== */
+
+/* Base style for the sub-club item in the carousel/grid */
+.subclub-view-card {
+    /* Inherits card, club styles, but we override specific features */
+    min-width: 250px; /* Ensures they don't get too small in a carousel */
+    max-width: 280px;
+    height: auto;
+    padding: 18px;
+    
+    /* Use a slightly darker background for contrast */
+    background: rgba(10, 10, 30, 0.8); 
+    border: 1px solid var(--accent-color, #6a11cb); /* Border highlights the parent club's color */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+}
+
+.subclub-view-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    /* Dynamic hover shadow using CSS variable */
+    box-shadow: 0 10px 25px var(--accent-color, #6a11cb); 
+    cursor: pointer;
+}
+
+/* Specific logo wrapper style for sub-clubs */
+.subclub-logo-wrapper {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 12px;
+    /* Remove generic club-logo glow and let the card border handle it */
+    box-shadow: none !important; 
+}
+
+/* Ensure sub-club logo image is circular and clean */
+.subclub-logo-wrapper img {
+    border: 2px solid var(--accent-color, #6a11cb);
+}
+
+/* Style for the parent club tag */
+.subclub-parent-tag {
+    font-size: 13px !important;
+    font-weight: 500;
+    margin: 0 0 10px 0 !important;
+    padding: 0;
+    color: #bbb;
+}
+
+.subclub-members {
+    /* Use the accent color for member count for visibility */
+    color: var(--accent-color, #00f2fe) !important; 
+    font-size: 15px !important;
+    font-weight: bold !important;
+    margin-top: 8px;
+}
+
+/* If you use a grid layout for sub-clubs (e.g., in a dedicated section) */
+#subclub-list {
+  /* This ensures the subclub cards are displayed cleanly */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+}
+
 /* ========================
    Member Search & Filters
 ======================== */

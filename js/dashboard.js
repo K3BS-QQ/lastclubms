@@ -1,3 +1,6 @@
+/* ==========================
+   Dashboard Logic
+========================== */
 function loadDashboard() {
   const user = JSON.parse(sessionStorage.getItem('user'));
 
@@ -81,7 +84,7 @@ function loadDashboard() {
     .then(res => res.json())
     .then(sessionData => {
       if (sessionData.loggedIn) {
-        sessionStorage.setItem('user', JSON.stringify(sessionData));
+        sessionStorage.setItem("user", JSON.stringify(sessionData));
 
         const userRole = sessionData.role;
         const assignedEl = document.getElementById('assigned-clubs');
@@ -149,129 +152,13 @@ function loadDashboard() {
             });
           }, 100);
 
-          // 🎯 Modal logic
+          // 🎯 Modal logic for MAIN CLUBS
           document.querySelectorAll('.card.club').forEach((card) => {
             card.addEventListener('click', () => {
+              // Pass the club data directly from the overview list
               const clubId = card.getAttribute('data-id');
               const club = activeClubs.find(c => c.id == clubId);
-
-              document.getElementById('modalClubName').textContent = club.name;
-              document.getElementById('modalClubLogo').src = club.logo || 'img/default.png';
-              document.getElementById('modalClubDescription').textContent = club.description || 'No description available.';
-              document.getElementById('modalClubStatus').textContent = club.enabled === 1 ? 'Active' : 'Disabled';
-              document.getElementById('modalClubMembers').textContent = `${club.members || 0} member${club.members === 1 ? '' : 's'}`;
-
-              const memberList = document.getElementById('modalMemberList');
-              memberList.innerHTML = `<div class="member-item">Loading members...</div>`;
-
-              // ============================
-              // ✅ Fetch members & render (dedupe, badges, hierarchy sort)
-              // ============================
-              fetch(`php/get_club_members.php?club_id=${clubId}`)
-                .then(res => res.json())
-                .then(memberData => {
-                  memberList.innerHTML = "";
-
-                  // basic guard
-                  if (!memberData.success || !Array.isArray(memberData.members) || memberData.members.length === 0) {
-                    memberList.innerHTML = `<div class="member-item">No members found.</div>`;
-                    return;
-                  }
-
-                  // combine rows per person (in case PHP returned multiple rows per person)
-                  const combined = {};
-                  memberData.members.forEach(row => {
-                    const key = row.id ?? row.name;
-                    if (!combined[key]) {
-                      combined[key] = {
-                        id: row.id ?? key,
-                        name: row.name ?? 'Unknown',
-                        rolesSet: new Set(),
-                        status: row.status ?? '',
-                        joined_at: row.joined_at ?? ''
-                      };
-                    }
-
-                    // accept either `roles` (comma list from GROUP_CONCAT) or `role` (single)
-                    const rolesStr = String(row.roles ?? row.role ?? '');
-                    rolesStr.split(/\s*,\s*/)
-                      .map(r => r.trim())
-                      .filter(Boolean)
-                      .forEach(r => combined[key].rolesSet.add(r));
-                  });
-
-                  const members = Object.values(combined).map(m => {
-                    const roles = Array.from(m.rolesSet);
-                    return {
-                      id: m.id,
-                      name: m.name,
-                      roles,
-                      rolesStr: roles.join(', '),
-                      status: m.status,
-                      joined_at: m.joined_at
-                    };
-                  });
-
-                  // role priority matcher (robust substring checks)
-                 function getRolePriority(role) {
-  if (!role) return 999;
-  const r = role.toLowerCase().trim();
-
-  if (r.includes('adviser') || r.includes('advisor')) return 1;
-  if (r.includes('president') && !r.includes('vice')) return 2;
-  if (r.includes('vice')) return 3;
-  if (r.includes('secretary')) return 4;
-  if (r.includes('treasurer')) return 5;
-  if (r.includes('auditor')) return 6;
-  if (r.includes('public relation') || r.includes('p.i.o') || r.includes('publicrelation') || r === 'pro') return 7;
-  if (r.includes('club manager') || r.includes('clubmanager')) return 8;
-  if (r.includes('documentation')) return 9;
-  if (r.includes('social media') || r.includes('social')) return 10;
-  if (r.includes('coordinator') || r.includes('manager') || r.includes('officer') || r.includes('head') || r.includes('director')) return 20;
-
-  // ✅ Force plain "member" to bottom
-  if (r === 'member') return 999;
-
-  return 50; // everything else (unspecified roles) goes here
-}
-
-
-
-                  // compute best rank for each member (lowest = highest priority)
-                  members.forEach(m => {
-                    const ranks = m.roles.length ? m.roles.map(getRolePriority) : [999];
-                    m.rank = Math.min(...ranks);
-                  });
-
-                  // sort by rank then name
-                  members.sort((a, b) => {
-                    if (a.rank !== b.rank) return a.rank - b.rank;
-                    return a.name.localeCompare(b.name);
-                  });
-
-                  // render
-                  members.forEach((m, i) => {
-                    const roleBadges = m.roles.map(r => `<span class="role-badge">${r}</span>`).join(' ');
-                    memberList.innerHTML += `
-                      <div class="member-item" style="animation: fadeGlowIn 0.55s ease forwards; animation-delay: ${i * 0.05}s;">
-                        <span class="member-name">${m.name}</span>
-                        ${roleBadges}
-                      </div>
-                    `;
-                  });
-                })
-                .catch(err => {
-                  console.error('Error loading members:', err);
-                  memberList.innerHTML = `<div class="member-item">Error loading members.</div>`;
-                });
-                
-                
-              // ❌ REMOVED SUB-CLUBS FETCH/RENDER BLOCK HERE
-              // This logic is no longer needed since sub-clubs are viewed in the main dashboard section.
-
-
-              // show modal
-              document.getElementById('clubModal').classList.add('show');
+              openClubModal(club); // Use centralized modal function
             });
           });
 
@@ -296,6 +183,126 @@ function loadDashboard() {
     });
 }
 
+// ============================================
+// ✅ NEW: CENTRALIZED MODAL OPENING FUNCTION
+// Handles member list fetching for any club ID
+// ============================================
+function openClubModal(clubData) {
+    const clubId = clubData.id;
+    const isSubClub = clubData.parent_name ? true : false;
+    
+    // 1. Populate modal fields
+    document.getElementById('modalClubName').textContent = clubData.name;
+    document.getElementById('modalClubLogo').src = clubData.logo || 'img/default.png';
+    // Add sub-club indicator to description
+    let descriptionText = clubData.description || 'No description available.';
+    if (isSubClub) {
+        descriptionText = `(Sub-Club of ${clubData.parent_name}) — ${descriptionText}`;
+    }
+    document.getElementById('modalClubDescription').textContent = descriptionText;
+    document.getElementById('modalClubStatus').textContent = clubData.enabled === 1 ? 'Active' : 'Disabled';
+    document.getElementById('modalClubMembers').textContent = `${clubData.members || 0} member${clubData.members === 1 ? '' : 's'}`;
+
+    const memberList = document.getElementById('modalMemberList');
+    memberList.innerHTML = `<div class="member-item">Loading members...</div>`;
+
+    // 2. Fetch members
+    fetch(`php/get_club_members.php?club_id=${clubId}`)
+        .then(res => res.json())
+        .then(memberData => {
+            memberList.innerHTML = "";
+
+            if (!memberData.success || !Array.isArray(memberData.members) || memberData.members.length === 0) {
+                memberList.innerHTML = `<div class="member-item">No members found.</div>`;
+                return;
+            }
+
+            // Processing logic (dedupe, ranking, sorting) remains the same
+            const combined = {};
+            memberData.members.forEach(row => {
+                const key = row.id ?? row.name;
+                if (!combined[key]) {
+                    combined[key] = {
+                        id: row.id ?? key,
+                        name: row.name ?? 'Unknown',
+                        rolesSet: new Set(),
+                        status: row.status ?? '',
+                        joined_at: row.joined_at ?? ''
+                    };
+                }
+                const rolesStr = String(row.roles ?? row.role ?? '');
+                rolesStr.split(/\s*,\s*/)
+                    .map(r => r.trim())
+                    .filter(Boolean)
+                    .forEach(r => combined[key].rolesSet.add(r));
+            });
+            const members = Object.values(combined).map(m => {
+                const roles = Array.from(m.rolesSet);
+                return {
+                    id: m.id,
+                    name: m.name,
+                    roles,
+                    rolesStr: roles.join(', '),
+                    status: m.status,
+                    joined_at: m.joined_at
+                };
+            });
+            
+            // Re-define getRolePriority here or rely on the function existing globally if imported
+            // (Assuming getRolePriority is accessible globally or defined in main.js/utils.js)
+            function getRolePriority(role) {
+                const user = JSON.parse(sessionStorage.getItem('user')); // Retrieve user data for context
+                if (!role) return 999;
+                const r = role.toLowerCase().trim();
+
+                if (r.includes('adviser') || r.includes('advisor')) return 1;
+                if (r.includes('president') && !r.includes('vice')) return 2;
+                if (r.includes('vice')) return 3;
+                if (r.includes('secretary')) return 4;
+                if (r.includes('treasurer')) return 5;
+                if (r.includes('auditor')) return 6;
+                if (r.includes('public relation') || r.includes('p.i.o') || r.includes('publicrelation') || r === 'pro') return 7;
+                if (r.includes('club manager') || r.includes('clubmanager')) return 8;
+                if (r.includes('documentation')) return 9;
+                if (r.includes('social media') || r.includes('social')) return 10;
+                if (r.includes('coordinator') || r.includes('manager') || r.includes('officer') || r.includes('head') || r.includes('director')) return 20;
+
+                if (r === 'member') return 999;
+
+                return 50; 
+            }
+
+            members.forEach(m => {
+                const ranks = m.roles.length ? m.roles.map(getRolePriority) : [999];
+                m.rank = Math.min(...ranks);
+            });
+
+            members.sort((a, b) => {
+                if (a.rank !== b.rank) return a.rank - b.rank;
+                return a.name.localeCompare(b.name);
+            });
+
+            // render
+            members.forEach((m, i) => {
+                const roleBadges = m.roles.map(r => `<span class="role-badge">${r}</span>`).join(' ');
+                memberList.innerHTML += `
+                    <div class="member-item" style="animation: fadeGlowIn 0.55s ease forwards; animation-delay: ${i * 0.05}s;">
+                        <span class="member-name">${m.name}</span>
+                        ${roleBadges}
+                    </div>
+                `;
+            });
+        })
+        .catch(err => {
+            console.error('Error loading members:', err);
+            memberList.innerHTML = `<div class="member-item">Error loading members.</div>`;
+        });
+        
+    // 3. Show modal
+    document.getElementById('clubModal').classList.add('show');
+}
+
+
 // New function to load and render sub-clubs in the dashboard side section
 function loadSubClubs() {
     const subClubList = document.getElementById('subclub-list');
@@ -310,11 +317,23 @@ function loadSubClubs() {
                     // Structure mimics the main club card: club-logo, h3, status, members.
                     const card = document.createElement("div");
                     card.className = "card club subclub-view-card"; // Add subclub-view-card for unique styling
+                    card.dataset.id = sc.id; // Store ID for click event
                     
                     // Use parent_club_color set in PHP for the accent, if available
                     const accentColor = sc.parent_club_color || '#3498db'; 
                     card.style.setProperty('--accent-color', accentColor);
                     
+                    // Escape data for safe JSON string in click event
+                    const subClubJson = JSON.stringify({
+                        id: sc.id,
+                        name: sc.name,
+                        logo: sc.logo,
+                        description: sc.description,
+                        enabled: sc.enabled,
+                        members: sc.members,
+                        parent_name: sc.parent_name // Critical for modal title/description
+                    }).replace(/'/g, '\\\''); // Escape inner single quotes
+
                     card.innerHTML = `
                         <div class="club-logo subclub-logo-wrapper" style="box-shadow: 0 0 15px ${accentColor};">
                             <img src="${sc.logo || 'img/default.png'}" alt="${sc.name} Logo">
@@ -334,6 +353,23 @@ function loadSubClubs() {
                         
                         <div class="members subclub-members">${sc.members || 0} member${sc.members === 1 ? '' : 's'}</div>
                     `;
+                    
+                    // ✅ ATTACH CLICK EVENT to open the modal
+                    card.addEventListener('click', () => {
+                        openClubModal(JSON.parse(card.dataset.clubData));
+                    });
+                    
+                    // Attach clean data to element for retrieval in click event
+                    card.dataset.clubData = JSON.stringify({
+                        id: sc.id,
+                        name: sc.name,
+                        logo: sc.logo,
+                        description: sc.description,
+                        enabled: sc.enabled,
+                        members: sc.members,
+                        parent_name: sc.parent_name 
+                    });
+
                     subClubList.appendChild(card);
                 });
             } else {
