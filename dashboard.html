@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard - Club Management</title>
+  <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/account.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
+
+  
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fa fa-layer-group logo-icon" aria-hidden="true"></i>
+        <span class="logo-text">Club Management</span>
+      </div>
+      <p class="role">Member Record System</p>
+    </div>
+
+    <nav>
+      <button id="nav-dashboard" class="active">
+        <i class="fa fa-home" aria-hidden="true"></i>
+        <span class="label">Dashboard</span>
+      </button>
+      <button id="nav-members">
+        <i class="fa fa-id-card" aria-hidden="true"></i>   
+        <span class="label">Member Management</span>
+      </button>
+      <button id="nav-clubs">
+        <i class="fa fa-users" aria-hidden="true"></i>
+        <span class="label">Club Management</span>
+      </button>
+      <button id="nav-accounts">
+        <i class="fa fa-user-cog" aria-hidden="true"></i>
+        <span class="label">Accounts</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div id="user-info">admin (admin)</div>
+      <button id="logout-btn">
+        <i class="fa fa-sign-out-alt" aria-hidden="true"></i>
+        <span class="label">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main id="content"></main>
+
+  <!-- Edit Club Modal -->
+  <div id="editModal" style="display:none; position:fixed; top:20%; left:35%; width:30%; background:white; padding:20px; border:1px solid #ccc; border-radius:10px; z-index:100;">
+    <h3>Edit Club</h3>
+    <form id="editClubForm">
+      <input type="hidden" id="clubId" name="clubId">
+      <label>Club Name:</label>
+      <input type="text" id="clubName" name="clubName" required style="width:100%; padding:5px;" /><br><br>
+      <label>Description:</label>
+      <textarea id="clubDescription" name="clubDescription" required style="width:100%; padding:5px;"></textarea><br><br>
+      <button type="submit" style="background-color:#3498db; color:white; padding:5px 10px;">Save Changes</button>
+      <button type="button" onclick="closeModal()" style="margin-left:8px; padding:5px 10px;">Cancel</button>
+    </form>
+  </div>
+<!-- First load the dashboard code -->
+<script src="js/dashboard.js"></script>
+<script src="js/accounts.js"></script>
+<script src="js/main.js"></script>
+<script src="js/clubs.js"></script>
+<script src="js/members.js"></script>
+<script src="js/assignclub.js"></script>
+<script src="js/session.js"></script>
+
+
+</body>
+</html>

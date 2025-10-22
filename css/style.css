@@ -1,0 +1,166 @@
+/* Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Arial, sans-serif;
+  height: 100vh;
+  background: #ffffff; /* White background */
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Dark login card */
+.login-card {
+  background: #111827; /* Dark card */
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  width: 360px;
+  text-align: center;
+  color: #e5e7eb;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #f9fafb;
+}
+
+.login-subtitle {
+  margin: 0.5rem 0 2rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+/* Input fields */
+.input-group {
+  display: flex;
+  align-items: center;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 1rem;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.input-group i {
+  color: #9ca3af;
+  margin-right: 10px;
+}
+
+.input-group input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: 0.95rem;
+  color: #f9fafb;
+  background: transparent;
+}
+
+.input-group:focus-within {
+  border-color: #7d5fff;
+  box-shadow: 0 0 8px rgba(125, 95, 255, 0.5);
+}
+
+/* Options row */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  color: #9ca3af;
+}
+
+.options a {
+  color: #7d5fff;
+  text-decoration: none;
+}
+
+.options a:hover {
+  text-decoration: underline;
+}
+
+/* Gradient Login Button */
+.btn-login {
+  width: 100%;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #7d5fff, #5b8eff);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(125, 95, 255, 0.5);
+}
+
+/* Error message */
+.error-message {
+  margin-top: 10px;
+  color: #f87171;
+  font-size: 0.9rem;
+}
+
+/* Logo container */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+/* Logo image */
+.logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff;
+  padding: 10px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Glowing spinning ring */
+.logo-container::before {
+  content: "";
+  position: absolute;
+  width: 160px; /* slightly larger than logo */
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #6366f1,
+    #8b5cf6,
+    #ec4899,
+    #6366f1
+  );
+  animation: spin 3s linear infinite;
+  z-index: 1;
+
+  /* Glow effect */
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.8),
+              0 0 45px rgba(139, 92, 246, 0.6),
+              0 0 65px rgba(236, 72, 153, 0.5);
+  filter: blur(2px);
+}
+
+/* Spin animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Club Member System - Login</title>
+<link rel="icon" type="image/png" href="img/osa_circle.png">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div id="login-page" class="centered">
+    <div class="login-card">
+      
+      <!-- 🔹 Logo here -->
+      <div class="logo-container">
+        <img src="img/osa.jpg" alt="Club Logo" class="logo" />
+      </div>
+
+
+      <h2 class="login-title">Club Record System</h2>
+      <p class="login-subtitle">Login to access your account</p>
+      
+      <form class="login-form">
+        <div class="input-group">
+          <i class="fa fa-user"></i>
+          <input type="text" id="username" placeholder="Username" required>
+        </div>
+        <div class="input-group">
+          <i class="fa fa-lock"></i>
+          <input type="password" id="password" placeholder="Password" required>
+        </div>
+
+        
+
+        <button type="button" id="login-btn" class="btn-login">Login</button>
+      </form>
+
+      <div id="login-message" class="error-message"></div>
+    </div>
+  </div>
+<script src="js/script.js"></script>
+</body>
+</html>
