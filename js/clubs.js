@@ -4,6 +4,133 @@
 ========================== */
 
 (function () {
+    /* ==========================
+     Inject Sub-Club Styles
+  ========================== */
+  const style = document.createElement("style");
+  style.textContent = `
+    /* --- Sub-Club Section Styling --- */
+    .subclubs {
+      background: #f9f9f9;
+      border-left: 3px solid #3b82f6;
+      margin-top: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
+    }
+
+    .subclub-minimal-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .subclub-minimal-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .subclub-minimal-card.active {
+      border-left: 4px solid #10b981;
+    }
+
+    .subclub-minimal-card.inactive {
+      opacity: 0.6;
+    }
+
+    .subclub-info {
+      flex: 1;
+    }
+
+    .subclub-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .subclub-header h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+      color: #111827;
+    }
+
+    .subclub-icon {
+      font-size: 1.2rem;
+      color: #2563eb;
+    }
+
+    .subclub-info p {
+      margin: 4px 0 6px;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+
+    .subclub-meta {
+      font-size: 0.85rem;
+      color: #6b7280;
+      display: flex;
+      gap: 10px;
+    }
+
+    .subclub-meta .status.active {
+      color: #16a34a;
+      font-weight: 600;
+    }
+
+    .subclub-meta .status.disabled,
+    .subclub-meta .status.inactive {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .subclub-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .subclub-actions .btn-minimal {
+      background: #f3f4f6;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .subclub-actions .btn-minimal:hover {
+      background: #e5e7eb;
+    }
+
+    .subclub-actions .btn-minimal.delete {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .subclub-actions .btn-minimal.edit {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .subclub-actions .btn-minimal.edit:hover {
+      background: #bfdbfe;
+    }
+
+    .subclub-actions .btn-minimal.delete:hover {
+      background: #fecaca;
+    }
+  `;
+  document.head.appendChild(style);
+
   // helper: escape single quotes & backslashes for safe use inside onclick attr strings
   function escAttr(s) {
     if (s === null || s === undefined) return '';
@@ -361,7 +488,7 @@ function renderClubRowHtml(sc, isChild) {
       ${user.role === "admin" ? `
         <div class="subclub-actions">
           
-          <button class="btn-minimal edit" onclick="loadClubsMembers(${sc.id}, '${nameEsc}')">Members</button>
+        
 
           <button class="btn-minimal edit" onclick="openClubEditModal(${sc.id}, '${nameEsc}', '${descEsc}')">Edit</button>
           <button class="btn-minimal delete" onclick="deleteClub(${sc.id})">Delete</button>

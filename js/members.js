@@ -157,35 +157,52 @@ function loadMembers() {
 
         // Handle Add Member
         if (isAdmin || sessionData.role === "staff") {
-          document.getElementById("add-member-form").addEventListener("submit", e => {
-            e.preventDefault();
-            const name = document.getElementById("member-name").value.trim();
-            const role = document.getElementById("member-role").value;
-            const clubId = document.getElementById("member-club").value;
+  document.getElementById("add-member-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = document.getElementById("member-name").value.trim();
+    const role = document.getElementById("member-role").value;
+    const clubId = document.getElementById("member-club").value;
 
-            if (!clubId) return alert("Please select a club or sub-club.");
+    if (!clubId) return alert("Please select a club or sub-club.");
 
-            fetch("php/add_member.php", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name, role, club_id: clubId }),
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (data.success) {
-                  alert("Member added!");
-                  document.getElementById("add-member-form").reset();
-                  // Reset Club dropdown to "Select Club" after successful submission
-                  document.getElementById("member-club").value = ""; 
+    // 🔍 Check how many clubs this student already belongs to
+    fetch("php/get_members.php")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.members)) {
+          const count = data.members.filter(
+            m => m.name.trim().toLowerCase() === name.toLowerCase()
+          ).length;
 
-                  fetchMembers(sessionData);
-                } else {
-                  alert("Failed: " + (data.message || "Cannot add member"));
-                }
-              })
-              .catch(() => alert("Error connecting to server"));
-          });
+          if (count >= 2) {
+            alert(`${name} is already in ${count} clubs and cannot join more than 2.`);
+            return; // ❌ Stop here — don’t add them again
+          }
         }
+
+        // ✅ Proceed to add member
+        fetch("php/add_member.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, role, club_id: clubId }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              alert("Member added!");
+              document.getElementById("add-member-form").reset();
+              document.getElementById("member-club").value = "";
+              fetchMembers(sessionData);
+            } else {
+              alert("Failed: " + (data.message || "Cannot add member"));
+            }
+          })
+          .catch(() => alert("Error connecting to server"));
+      })
+      .catch(() => alert("Error checking existing memberships."));
+  });
+}
+
 
         // 🔍 Search & Filter
         document.getElementById("member-search").addEventListener("input", () => fetchMembers(sessionData));
